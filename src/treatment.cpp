@@ -67,6 +67,11 @@ String DallasTempThread::getJsonTemp()
    return result;
 }
 
+float DallasTempThread::calculateAverage() const
+{
+   return (tempValue1 + tempValue2 + tempValue3) / 3;
+}
+
 void DallasTempThread::run()
 {
    temp->requestTemperatures();
@@ -90,31 +95,81 @@ void PowerControlThread::onRelay(int relayPin, int state)
    digitalWrite(relayPin, state);
 }
 
-String PowerControlThread::setHeatingOn()
+String PowerControlThread::setHeating(bool state)
 {
-   onRelay(RELAY_PIN_1, HIGH);
+   if ( state )
+   {
+      onRelay(TEH_TOP, HIGH);
+      onRelay(TEH_BOTTOM, HIGH);
+   }
+   else
+   {
+      onRelay(TEH_TOP, LOW);
+      onRelay(TEH_BOTTOM, LOW);
+   }
+   
    return "true";
 }
 
-String PowerControlThread::setHeatingOff()
+String PowerControlThread::setConvection(bool state)
 {
-   onRelay(RELAY_PIN_1, LOW);
+   if ( state )
+   {
+      onRelay(CONVECTION_COOLER_2, HIGH);
+      onRelay(CONVECTION_COOLER_1, HIGH);
+   }
+   else
+   {
+      onRelay(CONVECTION_COOLER_1, LOW);
+      onRelay(CONVECTION_COOLER_2, LOW);
+      
+   }
+   
    return "true";
 }
 
-String PowerControlThread::setConvectionOn()
+String PowerControlThread::setWaterPump(bool state)
 {
-   onRelay(RELAY_PIN_2, HIGH);
-   onRelay(RELAY_PIN_3, HIGH);
+   if ( state )
+      onRelay(WATER_PUMP, HIGH);
+   else 
+      onRelay(WATER_PUMP, LOW);
+
    return "true";
 }
 
-String PowerControlThread::setConvectionOff()
+String PowerControlThread::setAirPump(bool state)
 {
-   onRelay(RELAY_PIN_2, LOW);
-   onRelay(RELAY_PIN_3, LOW);
+   if ( state )
+      onRelay(AIR_PUMP, HIGH);
+   else
+      onRelay(AIR_PUMP, LOW);
    return "true";
 }
+
+String PowerControlThread::setMode(const String& mode)
+{
+   if ( mode == "HEATING_MANUALLY")
+      currentMode = MANUAL_MODE;
+   else if ( mode == "HEATING_AUTO")
+      currentMode = AUTO_MODE;
+   else if ( mode == "NO_HEATING")
+      currentMode =  NO_HEATING;
+   else if (mode == "SMOKING")
+      currentMode = SMOKING_MODE;
+   else
+   {
+      currentMode = 0x00;
+      return "false";
+   }
+   return "true";
+}
+
+  uint8_t PowerControlThread::getCurrentMode() const
+  {
+     return currentMode;
+  }
+
 
 void PowerControlThread::run()
 {
@@ -162,34 +217,41 @@ void HeatTreatmentThread::run()
    runned();
 }
 
-String HeatTreatmentThread::setConvectionOff()
+String HeatTreatmentThread::setConvection(bool state)
 {
-   return PowerControlThread::instance()->setConvectionOff();
+   return PowerControlThread::instance()->setConvection(state);
 }
 
-String HeatTreatmentThread::setConvectionOn()
+String HeatTreatmentThread::setHeating(bool state)
 {
-   return PowerControlThread::instance()->setConvectionOn();
+   return PowerControlThread::instance()->setHeating(state);
 }
 
-String HeatTreatmentThread::setHeatingOff()
+String HeatTreatmentThread::setAirPump(bool state)
 {
-   return PowerControlThread::instance()->setHeatingOff();
+   return PowerControlThread::instance()->setAirPump(state);
 }
 
-String HeatTreatmentThread::setHeatingOn()
+String HeatTreatmentThread::setWaterPump(bool state)
 {
-   return PowerControlThread::instance()->setHeatingOn();
+   return PowerControlThread::instance()->setWaterPump(state);
 }
 
-String HeatTreatmentThread::getJsonProbeTemp()
+String HeatTreatmentThread::getJsonTemps() const
 {
-   return ProbeThread::instance()->getJsonProbeTemp();
-}
-
-String HeatTreatmentThread::getJsonTemp()
-{
-   return DallasTempThread::instance()->getJsonTemp();
+   StaticJsonDocument<200> jsonTemp;
+   StaticJsonDocument<200> jsonProbe;
+   String temp = DallasTempThread::instance()->getJsonTemp();
+   String probe = ProbeThread::instance()->getJsonProbeTemp();
+   deserializeJson(jsonTemp, temp);
+   deserializeJson(jsonProbe, probe);
+   StaticJsonDocument<400> jsonBuffer;
+   JsonObject root = jsonBuffer.to<JsonObject>();
+   root["temp"] = jsonTemp.to<JsonObject>();
+   root["probe"] = jsonProbe.to<JsonObject>();
+   String result;
+   serializeJson(root, result);
+   return result;
 }
 
 void HeatTreatmentThread::setStart(bool flag)
@@ -200,4 +262,19 @@ void HeatTreatmentThread::setStart(bool flag)
 bool HeatTreatmentThread::getStartFlag() const
 {
    return startingFlag;
+}
+
+String HeatTreatmentThread::setMode(const String& mode)
+{
+   return PowerControlThread::instance()->setMode(mode);
+}
+
+String HeatTreatmentThread::getCurrentState() const
+{
+   return "{state: none}";
+}
+
+void HeatTreatmentThread::setSettings(const String& settings)
+{
+
 }

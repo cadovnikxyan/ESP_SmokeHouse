@@ -20,7 +20,6 @@ private:
 
 public:
   DEFINE_INSTANCE(WebServerThread)
-  String createJSONTempString();
   void handleRoot();
   void handleNotFound();
   void run() override;

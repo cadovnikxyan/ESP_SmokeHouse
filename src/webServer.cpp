@@ -65,7 +65,9 @@ WebServerThread::WebServerThread()
      heatTreatmentThread(HeatTreatmentThread::instance()),
      controller(new ThreadController)
 {
-   MDNS.begin("cadovnik.esp8266.fvds.ru");
+   if (!MDNS.begin("cadovnik_esp8266")){
+      Serial.println("failed to start MDNS");
+   }
    MDNS.addService("https", "tcp", 443);
    controller->add(heatTreatmentThread);
    heatTreatmentThread->setInterval(100);
@@ -75,44 +77,52 @@ WebServerThread::WebServerThread()
       this->handleRoot();
    });
 
-   server->on("/Temp", HTTP_POST, [this]()
+   server->on("/GetTemperatures", HTTP_GET, [this]()
    {
-      server->send(200, "application/json", heatTreatmentThread->getJsonTemp());
+      server->send(200, "application/json", heatTreatmentThread->getJsonTemps());
    });
 
-   server->on("/TempProbe", HTTP_POST, [this]()
+   server->on("/GetCurrentState", HTTP_GET, [this]()
    {
-      server->send(200, "application/json", heatTreatmentThread->getJsonProbeTemp());
+      server->send(200, "application/json", heatTreatmentThread->getCurrentState());
    });
 
-   server->on("/SetHeatingOn", HTTP_POST, [this]()
+   server->on("/SetHeating", HTTP_POST, [this]()
    {
-      server->send(200, "application/json", heatTreatmentThread->setHeatingOn());
+      int args = server->args();
+      String val = server->arg(0);
+      server->send(200, "application/json", heatTreatmentThread->setHeating(val == "true" ? true : false));
    });
 
-   server->on("/SetHeatingOn", HTTP_POST, [this]()
+   server->on("/SetConvection", HTTP_POST, [this]()
    {
-      server->send(200, "application/json", heatTreatmentThread->setHeatingOff());
+      int args = server->args();
+      String val = server->arg(0);
+      server->send(200, "application/json", heatTreatmentThread->setConvection(val == "true" ? true : false));
    });
 
-   server->on("/SetConvectionOn", HTTP_POST, [this]()
+   server->on("/SetAirPump", HTTP_POST, [this]()
    {
-      server->send(200, "application/json", heatTreatmentThread->setConvectionOn());
+      int args = server->args();
+      String val = server->arg(0);
+      server->send(200, "application/json", heatTreatmentThread->setAirPump(val == "true" ? true : false));
    });
 
-   server->on("/SetConvectionOff", HTTP_POST, [this]()
+   server->on("/SetWaterPump", HTTP_POST, [this]()
    {
-      server->send(200, "application/json", heatTreatmentThread->setConvectionOff());
+      int args = server->args();
+      String val = server->arg(0);
+      server->send(200, "application/json", heatTreatmentThread->setWaterPump(val == "true" ? true : false));
    });
 
    server->on("/StartHeatTreatment", HTTP_POST, [this]()
    {
-      String respose = "false";
+      String respose = "{started : false}";
       if ( controller->shouldRun() )
       {
          heatTreatmentThread->setStart(true);
          controller->add(heatTreatmentThread);
-         respose = "true";
+         respose = "{started : true}";
       }
       server->send(200, "application/json", respose);
    });
@@ -120,8 +130,8 @@ WebServerThread::WebServerThread()
    server->on("/SetMode", HTTP_POST, [this]()
    {
       int args = server->args();
-      String name = server->argName(0);
-      server->send(200, "application/json", heatTreatmentThread->setConvectionOff());
+      String val = server->arg(0);
+      server->send(200, "application/json", heatTreatmentThread->setMode(val));
    });
 
    server->onNotFound([this]()
@@ -129,11 +139,6 @@ WebServerThread::WebServerThread()
       this->handleNotFound();
    });
    server->begin();
-}
-
-String WebServerThread::createJSONTempString()
-{
-   return "JsonString();";
 }
 
 void WebServerThread::handleRoot()
@@ -161,7 +166,9 @@ void WebServerThread::handleNotFound()
 void WebServerThread::run()
 {
    server->handleClient();
-   MDNS.update();
+  if (! MDNS.update()) {
+     Serial.println("failed to update MDNS!");
+  }
    controller->run();
    runned();
 }
