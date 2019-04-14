@@ -20,7 +20,7 @@ void setup()
 {
   controller = new ThreadController();
   WebServerThread* webServerThread = WebServerThread::instance();
-  webServerThread->setInterval(100);
+  webServerThread->setInterval(10);
   controller->add(webServerThread);
 
   Serial.begin(9600);
