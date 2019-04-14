@@ -36,6 +36,7 @@ double ProbeThread::getTemp()
 void ProbeThread::run()
 {
    tempValue = getTemp();
+   __globalState__.currentProbeTemp = tempValue;
    delay(100);
    runned();
 }

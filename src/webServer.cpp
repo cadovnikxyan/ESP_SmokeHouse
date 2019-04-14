@@ -101,20 +101,6 @@ WebServerThread::WebServerThread()
       server->send(200, "application/json", heatTreatmentThread->setConvection(val == "true" ? true : false));
    });
 
-   server->on("/SetAirPump", HTTP_POST, [this]()
-   {
-      int args = server->args();
-      String val = server->arg(0);
-      server->send(200, "application/json", heatTreatmentThread->setAirPump(val == "true" ? true : false));
-   });
-
-   server->on("/SetWaterPump", HTTP_POST, [this]()
-   {
-      int args = server->args();
-      String val = server->arg(0);
-      server->send(200, "application/json", heatTreatmentThread->setWaterPump(val == "true" ? true : false));
-   });
-
    server->on("/StartHeatTreatment", HTTP_POST, [this]()
    {
       String respose = "{started : false}";
@@ -127,16 +113,9 @@ WebServerThread::WebServerThread()
       server->send(200, "application/json", respose);
    });
 
-   server->on("/SetMode", HTTP_POST, [this]()
-   {
-      int args = server->args();
-      String val = server->arg(0);
-      server->send(200, "application/json", heatTreatmentThread->setMode(val));
-   });
-
    server->onNotFound([this]()
    {
-      this->handleNotFound();
+      handleNotFound();
    });
    server->begin();
 }

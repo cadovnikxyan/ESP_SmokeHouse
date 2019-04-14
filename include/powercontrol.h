@@ -9,13 +9,13 @@ private:
 
 public:
   DEFINE_INSTANCE(PowerControlThread)
-  String setHeating(bool state);
-  String setConvection(bool state);
-  String setWaterPump(bool state);
-  String setAirPump(bool state);
-  String setMode(const String& mode);
+  void setHeating(bool state);
+  void setConvection(bool state);
+  void setWaterPump(bool state);
+  void setAirPump(bool state);
+  void setMode(const String& mode);
   uint8_t getCurrentMode() const;
-  double* getPowerValueRef(){ return &powerValue; }
+  double* getPowerValuePtr(){ return &powerValue; }
   inline void onRelay(int relayPin, int value);
   void run() override;
 

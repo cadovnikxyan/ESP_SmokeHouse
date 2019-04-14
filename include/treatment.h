@@ -9,6 +9,7 @@
 
 class HeatTreatmentThread : public Thread
 {
+private:
   PowerControlThread* powerControlThread;
   DallasTempThread* dallasTempThread;
   ProbeThread* probeThread;
@@ -17,6 +18,9 @@ class HeatTreatmentThread : public Thread
   time_t start;
   time_t stop;
   bool startingFlag;
+  double setPoint = 100;
+  double aggKp=4, aggKi=0.2, aggKd=1;
+  double consKp=1, consKi=0.05, consKd=0.25;
  
 public:
   DEFINE_INSTANCE(HeatTreatmentThread)
@@ -24,10 +28,7 @@ public:
   void stopTreatment();
   String setHeating(bool state);
   String setConvection(bool state);
-  String setAirPump(bool state);
-  String setWaterPump(bool state);
   String getJsonTemps() const;
-  String setMode(const String& mode);
   String getCurrentState() const;
   void setSettings(const String& settings);
   void run() override;
@@ -37,11 +38,7 @@ public:
 private:
   void setUpPID();
   void adjustPID();
-
-  double setPoint = 100;
-  double aggKp=4, aggKi=0.2, aggKd=1;
-  double consKp=1, consKi=0.05, consKd=0.25;
-  
+  String getJsonState() const;
 };
 
 #endif

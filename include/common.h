@@ -50,10 +50,132 @@
 #define FRYING_DONE_TEMP 60
 #define FULL_DONE_TEMP 71
 
-#define MANUAL_MODE   0x01
-#define AUTO_MODE     0x02
-#define NO_HEATING    0x03
-#define SMOKING_MODE  0x04
+#define DRYING_OUT_TEMP 60
+#define FRYING_OUT_TEMP 85
+#define BOILING_OUT_TEMP 80
 
+#define OUT_MAX_VALUE_PID 853
+
+/*
+State field description : 
+ 0x012345
+
+ 0: Mode 
+ 1: Heating (on/off)
+ 2: Heating state
+ 3: Convection state (on/off)
+ 4: Smoking state (air pump on/off)
+ 5: Water pump state (on/off)
+
+*/
+
+#define MANUAL_MODE              0x100000
+#define AUTO_MODE                0x200000
+#define NO_HEATING               0x300000
+#define SMOKING_MODE             0x400000
+
+#define HEATING_STATE_ON         0x010000
+#define HEATING_STATE_OFF        0x020000
+
+#define HEATING_NONE_STATE       0x001000
+#define HEATING_DRYING_STATE     0x002000
+#define HEATING_FRYING_STATE     0x003000
+#define HEATING_BOILING_STATE    0x004000
+
+#define CONVECTION_STATE_ON      0x000100
+#define CONVECTION_STATE_OFF     0x000200
+
+#define AIR_PUMP_STATE_ON        0x000010
+#define AIR_PUMP_STATE_OFF       0x000020
+
+#define WATER_PUMP_STATE_ON      0x000001
+#define WATER_PUMP_STATE_OFF     0x000002
+
+struct GlobalState
+{
+    double currentOutTemp;
+    double currentProbeTemp;
+    int state;
+    GlobalState():
+    state(0x000000)
+    {
+        state |=  MANUAL_MODE;
+        state |=  HEATING_STATE_OFF;
+        state |=  HEATING_NONE_STATE;
+        state |=  CONVECTION_STATE_OFF;
+        state |=  AIR_PUMP_STATE_OFF;
+        state |=  WATER_PUMP_STATE_OFF;
+    }
+
+    String getMode()
+    {
+        String modeValue;
+        if ( state & MANUAL_MODE )
+            modeValue = "manual";
+        else if (state & AUTO_MODE )
+            modeValue = "auto";
+        else if (state & NO_HEATING )
+            modeValue = "no_heating";
+        else if (state & SMOKING_MODE )
+            modeValue = "smoking";
+        return modeValue;
+    }
+
+    String getHeatingState()
+    {
+        String heatingState;
+        if ( state & HEATING_STATE_ON )
+            heatingState = "on";
+        else if (state & HEATING_STATE_OFF )
+            heatingState = "off";
+        return heatingState;
+    }
+
+    String getHeatingMode()
+    {
+        String heatingMode;
+        if ( state & HEATING_NONE_STATE )
+            heatingMode = "none";
+        else if ( state & HEATING_DRYING_STATE )
+            heatingMode = "drying";
+        else if (state & HEATING_FRYING_STATE )
+            heatingMode = "frying";
+        else if (state & HEATING_BOILING_STATE )
+            heatingMode = "boiling";
+        return heatingMode;
+    }
+
+    String getConvectionState()
+    {
+        String convectionState;
+        if ( state & CONVECTION_STATE_ON )
+            convectionState = "on";
+        else if (state & CONVECTION_STATE_OFF )
+            convectionState = "off";
+        return convectionState;
+    }
+
+    String getAirPumpState()
+    {
+        String airPumpState;
+        if ( state & AIR_PUMP_STATE_ON )
+            airPumpState = "on";
+        else if (state & AIR_PUMP_STATE_OFF )
+            airPumpState = "off";
+        return airPumpState;
+    }
+
+    String getWaterPumpState()
+    {
+        String waterPumpState;
+        if ( state & WATER_PUMP_STATE_ON )
+            waterPumpState = "on";
+        else if (state & WATER_PUMP_STATE_OFF )
+            waterPumpState = "off";
+        return waterPumpState;
+    }
+};
+
+static GlobalState __globalState__;
 
 #endif

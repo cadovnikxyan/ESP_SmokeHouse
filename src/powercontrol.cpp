@@ -21,7 +21,7 @@ void PowerControlThread::onRelay(int relayPin, int value)
    }
 }
 
-String PowerControlThread::setHeating(bool state)
+void PowerControlThread::setHeating(bool state)
 {
    if ( state )
    {
@@ -33,11 +33,9 @@ String PowerControlThread::setHeating(bool state)
       onRelay(TEH_TOP, LOW);
       onRelay(TEH_BOTTOM, LOW);
    }
-   
-   return "true";
 }
 
-String PowerControlThread::setConvection(bool state)
+void PowerControlThread::setConvection(bool state)
 {
    if ( state )
    {
@@ -48,32 +46,26 @@ String PowerControlThread::setConvection(bool state)
    {
       onRelay(CONVECTION_COOLER_1, LOW);
       onRelay(CONVECTION_COOLER_2, LOW);
-      
    }
-   
-   return "true";
 }
 
-String PowerControlThread::setWaterPump(bool state)
+void PowerControlThread::setWaterPump(bool state)
 {
    if ( state )
       onRelay(WATER_PUMP, HIGH);
    else 
       onRelay(WATER_PUMP, LOW);
-
-   return "true";
 }
 
-String PowerControlThread::setAirPump(bool state)
+void PowerControlThread::setAirPump(bool state)
 {
    if ( state )
       onRelay(AIR_PUMP, HIGH);
    else
       onRelay(AIR_PUMP, LOW);
-   return "true";
 }
 
-String PowerControlThread::setMode(const String& mode)
+void PowerControlThread::setMode(const String& mode)
 {
    if ( mode == "HEATING_MANUALLY")
       currentMode = MANUAL_MODE;
@@ -86,9 +78,7 @@ String PowerControlThread::setMode(const String& mode)
    else
    {
       currentMode = 0x00;
-      return "false";
    }
-   return "true";
 }
 
 uint8_t PowerControlThread::getCurrentMode() const

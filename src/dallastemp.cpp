@@ -45,6 +45,7 @@ void DallasTempThread::run()
    tempValue1 = temp->getTempCByIndex(0);
    tempValue2 = temp->getTempCByIndex(1);
    tempValue3 = temp->getTempCByIndex(2);
+   __globalState__.currentOutTemp = *getResultTemp();
    runned();
 }
 

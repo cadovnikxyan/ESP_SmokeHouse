@@ -10,7 +10,8 @@ HeatTreatmentThread::HeatTreatmentThread()
      pid(nullptr),
      start(0),
      stop(0),
-     startingFlag(false)
+     startingFlag(false),
+     setPoint(DRYING_OUT_TEMP)
 {
       controller->add(powerControlThread);
       controller->add(probeThread);
@@ -22,14 +23,14 @@ void HeatTreatmentThread::setUpPID()
    if ( pid != nullptr )
       delete pid;
    
-   pid = new PID(dallasTempThread->getResultTemp(), powerControlThread->getPowerValueRef(), &setPoint, consKp, consKi, consKd, DIRECT);
-   pid->SetOutputLimits(0, 853);
+   pid = new PID(dallasTempThread->getResultTemp(), powerControlThread->getPowerValuePtr(), &setPoint, consKp, consKi, consKd, DIRECT);
+   pid->SetOutputLimits(0, OUT_MAX_VALUE_PID);
 }
 
 void HeatTreatmentThread::adjustPID()
 {
    double gap = abs(setPoint - *dallasTempThread->getResultTemp()); 
-   if ( gap < 10 )
+   if ( gap < 5 )
       pid->SetTunings(consKp, consKi, consKd);
    else
       pid->SetTunings(aggKp, aggKi, aggKd);
@@ -62,22 +63,14 @@ void HeatTreatmentThread::run()
 
 String HeatTreatmentThread::setConvection(bool state)
 {
-   return PowerControlThread::instance()->setConvection(state);
+    PowerControlThread::instance()->setConvection(state);
+    return "true";
 }
 
 String HeatTreatmentThread::setHeating(bool state)
 {
-   return PowerControlThread::instance()->setHeating(state);
-}
-
-String HeatTreatmentThread::setAirPump(bool state)
-{
-   return PowerControlThread::instance()->setAirPump(state);
-}
-
-String HeatTreatmentThread::setWaterPump(bool state)
-{
-   return PowerControlThread::instance()->setWaterPump(state);
+   PowerControlThread::instance()->setHeating(state);
+   return "true";
 }
 
 String HeatTreatmentThread::getJsonTemps() const
@@ -107,17 +100,32 @@ bool HeatTreatmentThread::getStartFlag() const
    return startingFlag;
 }
 
-String HeatTreatmentThread::setMode(const String& mode)
-{
-   return PowerControlThread::instance()->setMode(mode);
-}
-
 String HeatTreatmentThread::getCurrentState() const
 {
-   return "{state: none}";
+   return getJsonState();
 }
 
 void HeatTreatmentThread::setSettings(const String& settings)
 {
 
+}
+
+String HeatTreatmentThread::getJsonState() const
+{
+   StaticJsonDocument<400> jsonState;
+   JsonObject root = jsonState.to<JsonObject>();
+
+   root["mode"] = __globalState__.getMode();
+   root["heatingState"] = __globalState__.getHeatingState();
+   root["heatingMode"] = __globalState__.getHeatingMode();
+   root["convectionState"] = __globalState__.getConvectionState();
+   root["airPumpState"] = __globalState__.getAirPumpState();
+   root["waterPumpState"] = __globalState__.getWaterPumpState();
+
+   root["currentOutTemp"] = __globalState__.currentOutTemp;
+   root["currentProbeTemp"] = __globalState__.currentProbeTemp;
+   String result;
+   serializeJson(root, result);
+   Serial.println(__globalState__.state, 16);
+   return result;
 }
