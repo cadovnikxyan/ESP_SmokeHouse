@@ -16,23 +16,17 @@ void PowerControlThread::onRelay(int relayPin, int value)
       case TEH_BOTTOM: 
       case TEH_TOP:
          analogWrite(relayPin, value);
+         break;
       default:
          digitalWrite(relayPin, value);
+         break;
    }
 }
 
-void PowerControlThread::setHeating(bool state)
+void PowerControlThread::setHeating()
 {
-   if ( state )
-   {
-      onRelay(TEH_TOP, powerValue);
-      onRelay(TEH_BOTTOM, powerValue);
-   }
-   else
-   {
-      onRelay(TEH_TOP, LOW);
-      onRelay(TEH_BOTTOM, LOW);
-   }
+    onRelay(TEH_TOP, powerValue);
+    onRelay(TEH_BOTTOM, powerValue);
 }
 
 void PowerControlThread::setConvection(bool state)
@@ -41,53 +35,48 @@ void PowerControlThread::setConvection(bool state)
    {
       onRelay(CONVECTION_COOLER_2, HIGH);
       onRelay(CONVECTION_COOLER_1, HIGH);
+      __globalState__.state |= CONVECTION_STATE_ON;
    }
    else
    {
       onRelay(CONVECTION_COOLER_1, LOW);
       onRelay(CONVECTION_COOLER_2, LOW);
+      __globalState__.state |= CONVECTION_STATE_OFF;
    }
 }
 
 void PowerControlThread::setWaterPump(bool state)
 {
    if ( state )
+   {
       onRelay(WATER_PUMP, HIGH);
+      __globalState__.state |= WATER_PUMP_STATE_ON;
+   }
    else 
+   {
       onRelay(WATER_PUMP, LOW);
+      __globalState__.state |= WATER_PUMP_STATE_OFF;
+   }
 }
 
 void PowerControlThread::setAirPump(bool state)
 {
    if ( state )
+   {
       onRelay(AIR_PUMP, HIGH);
-   else
-      onRelay(AIR_PUMP, LOW);
-}
-
-void PowerControlThread::setMode(const String& mode)
-{
-   if ( mode == "HEATING_MANUALLY")
-      currentMode = MANUAL_MODE;
-   else if ( mode == "HEATING_AUTO")
-      currentMode = AUTO_MODE;
-   else if ( mode == "NO_HEATING")
-      currentMode =  NO_HEATING;
-   else if (mode == "SMOKING")
-      currentMode = SMOKING_MODE;
+    __globalState__.state |= AIR_PUMP_STATE_ON;
+   }
    else
    {
-      currentMode = 0x00;
+      onRelay(AIR_PUMP, LOW);
+    __globalState__.state |= AIR_PUMP_STATE_OFF;
    }
-}
-
-uint8_t PowerControlThread::getCurrentMode() const
-{
-    return currentMode;
 }
 
 void PowerControlThread::run()
 {
-   setHeating(true);
+   setHeating();
+   if ( powerValue > 0 )
+     __globalState__.state |= HEATING_STATE_ON;
    runned();
 }

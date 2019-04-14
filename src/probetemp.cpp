@@ -30,6 +30,16 @@ double ProbeThread::getTemp()
    steinhart += 1.0 / (NOMINAL_T + 273.15); // + (1/To)
    steinhart = 1.0 / steinhart; // Invert
    steinhart -= 273.15;
+   
+   if ( steinhart <= DRYING_DONE_TEMP )
+      __globalState__.state |= HEATING_DRYING_STATE;
+   else if ( steinhart < DRYING_DONE_TEMP && steinhart < FRYING_DONE_TEMP )
+      __globalState__.state |= HEATING_FRYING_STATE;
+   else if ( steinhart < FRYING_DONE_TEMP && steinhart < FULL_DONE_TEMP )
+      __globalState__.state |= HEATING_BOILING_STATE;
+   else 
+      __globalState__.state |= HEATING_NONE_STATE;
+
    return steinhart;
 }
 

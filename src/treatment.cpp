@@ -11,6 +11,7 @@ HeatTreatmentThread::HeatTreatmentThread()
      start(0),
      stop(0),
      startingFlag(false),
+     processStarted(false),
      setPoint(DRYING_OUT_TEMP)
 {
       controller->add(powerControlThread);
@@ -36,6 +37,11 @@ void HeatTreatmentThread::adjustPID()
       pid->SetTunings(aggKp, aggKi, aggKd);
 }
 
+void HeatTreatmentThread::switchHeatingMode()
+{
+   
+}
+
 void HeatTreatmentThread::startTreatment()
 {
    start = time(nullptr);
@@ -48,16 +54,43 @@ void HeatTreatmentThread::stopTreatment()
 
 void HeatTreatmentThread::run() 
 {
-   if( startingFlag )
+   if( startingFlag && !processStarted)
    {
       startTreatment();
       controller->run();
+      if ( __globalState__.state & AUTO_MODE )
+         setUpPID(); 
+
+      powerControlThread->setConvection(true);
+      processStarted = true;
    }
-   else 
+
+   else if ( !startingFlag && processStarted )
    {
       stopTreatment();
    }
 
+   if ( processStarted )
+   {
+      if (__globalState__.currentProbeTemp >= DRYING_DONE_TEMP )
+      {
+         setPoint = FRYING_OUT_TEMP;
+         powerControlThread->setAirPump(true);
+      }
+      else if (__globalState__.currentProbeTemp >= FRYING_DONE_TEMP )
+      {
+         setPoint = BOILING_OUT_TEMP;
+         powerControlThread->setWaterPump(true);
+      }
+      else if ( __globalState__.currentProbeTemp >= FULL_DONE_TEMP )
+      {
+         processStarted = false;
+         startingFlag = false;
+         delete pid;
+      }
+      adjustPID();
+      pid->Compute();
+   }
    runned();
 }
 
@@ -69,7 +102,7 @@ String HeatTreatmentThread::setConvection(bool state)
 
 String HeatTreatmentThread::setHeating(bool state)
 {
-   PowerControlThread::instance()->setHeating(state);
+   PowerControlThread::instance()->setHeating();
    return "true";
 }
 
@@ -103,11 +136,6 @@ bool HeatTreatmentThread::getStartFlag() const
 String HeatTreatmentThread::getCurrentState() const
 {
    return getJsonState();
-}
-
-void HeatTreatmentThread::setSettings(const String& settings)
-{
-
 }
 
 String HeatTreatmentThread::getJsonState() const
