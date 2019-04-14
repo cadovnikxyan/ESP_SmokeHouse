@@ -86,7 +86,6 @@ void HeatTreatmentThread::run()
       {
          processStarted = false;
          startingFlag = false;
-         delete pid;
       }
       adjustPID();
       pid->Compute();
