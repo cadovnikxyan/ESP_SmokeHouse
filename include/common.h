@@ -22,7 +22,7 @@
                                     }    
 
 #define THERMISTORPIN A0 
-#define TEMP_PIN      D8
+#define TEMP_PIN      D0
 #define RELAY_PIN_1   D1 // TEH_TOP
 #define RELAY_PIN_2   D2 // TEH_BOTTOM
 #define RELAY_PIN_3   D3 // WATER_PUMP
