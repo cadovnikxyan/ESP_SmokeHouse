@@ -22,7 +22,6 @@ void setup()
   WebServerThread* webServerThread = WebServerThread::instance();
   webServerThread->setInterval(10);
   controller->add(webServerThread);
-
   Serial.begin(9600);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)

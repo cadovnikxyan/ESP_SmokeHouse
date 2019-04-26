@@ -17,6 +17,13 @@ DallasTempThread::~DallasTempThread()
 
 String DallasTempThread::getJsonTemp()
 {
+   temp->requestTemperatures();
+   tempValue1 = temp->getTempCByIndex(0);
+   tempValue2 = temp->getTempCByIndex(1);
+   tempValue3 = temp->getTempCByIndex(2);
+   __globalState__.currentOutTemp = *getResultTemp();
+   Serial.print("Device count: ");
+   Serial.println(temp->getDeviceCount());
    StaticJsonDocument<200> jsonBuffer;
    JsonObject root = jsonBuffer.to<JsonObject>();
    root["temp1"] = tempValue1;
@@ -46,6 +53,8 @@ void DallasTempThread::run()
    tempValue2 = temp->getTempCByIndex(1);
    tempValue3 = temp->getTempCByIndex(2);
    __globalState__.currentOutTemp = *getResultTemp();
+   Serial.print("Out temp");
+   Serial.println(__globalState__.currentOutTemp);
    runned();
 }
 

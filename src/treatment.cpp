@@ -23,7 +23,7 @@ void HeatTreatmentThread::setUpPID()
 {
    if ( pid != nullptr )
       delete pid;
-   
+
    pid = new PID(dallasTempThread->getResultTemp(), powerControlThread->getPowerValuePtr(), &setPoint, consKp, consKi, consKd, DIRECT);
    pid->SetOutputLimits(0, OUT_MAX_VALUE_PID);
 }
@@ -56,6 +56,7 @@ void HeatTreatmentThread::run()
 {
    if( startingFlag && !processStarted)
    {
+      Serial.println("startTreatment()");
       startTreatment();
       controller->run();
       if ( __globalState__.state & AUTO_MODE )
@@ -76,27 +77,32 @@ void HeatTreatmentThread::run()
       {
          setPoint = FRYING_OUT_TEMP;
          powerControlThread->setAirPump(true);
+         switchHeatingMode();
       }
       else if (__globalState__.currentProbeTemp >= FRYING_DONE_TEMP )
       {
          setPoint = BOILING_OUT_TEMP;
          powerControlThread->setWaterPump(true);
+         switchHeatingMode();
       }
       else if ( __globalState__.currentProbeTemp >= FULL_DONE_TEMP )
       {
          processStarted = false;
          startingFlag = false;
       }
-      adjustPID();
-      pid->Compute();
+      if( pid != nullptr )
+      {
+         adjustPID();
+         pid->Compute();
+      }
    }
    runned();
 }
 
 String HeatTreatmentThread::setConvection(bool state)
 {
-    PowerControlThread::instance()->setConvection(state);
-    return "true";
+   PowerControlThread::instance()->setConvection(state);
+   return "true";
 }
 
 String HeatTreatmentThread::setHeating(bool state)
@@ -110,6 +116,7 @@ String HeatTreatmentThread::getJsonTemps() const
    StaticJsonDocument<200> jsonTemp;
    StaticJsonDocument<200> jsonProbe;
    String temp = DallasTempThread::instance()->getJsonTemp();
+   Serial.println(temp);
    String probe = ProbeThread::instance()->getJsonProbeTemp();
    deserializeJson(jsonTemp, temp);
    deserializeJson(jsonProbe, probe);
@@ -153,6 +160,5 @@ String HeatTreatmentThread::getJsonState() const
    root["currentProbeTemp"] = __globalState__.currentProbeTemp;
    String result;
    serializeJson(root, result);
-   Serial.println(__globalState__.state, 16);
    return result;
 }

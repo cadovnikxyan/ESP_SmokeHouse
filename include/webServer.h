@@ -6,14 +6,14 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#include <ESP8266WebServerSecure.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include "treatment.h"
 
 class WebServerThread : public Thread
 {
 private:
-  BearSSL::ESP8266WebServerSecure* server;
+  ESP8266WebServer* server;
   HeatTreatmentThread* heatTreatmentThread;
   ThreadController* controller;
   MDNSResponder mdns;
