@@ -133,8 +133,8 @@ String HeatTreatmentThread::setState(String stringState)
    __globalState__.setConvectionState(root["convectionState"]);
    __globalState__.setAirPumpState(root["airPumpState"]);
    __globalState__.setWaterPumpState(root["waterPumpState"]);
-   JsonVariant t = root["startHeatTreatment"];
-   setStart(t.to<bool>);
+   bool t = root["startHeatTreatment"];
+   setStart(t);
 
    return getJsonState();
 }
@@ -186,7 +186,7 @@ String HeatTreatmentThread::getJsonState() const
 
    root["currentOutTemp"] = __globalState__.currentOutTemp;
    root["currentProbeTemp"] = __globalState__.currentProbeTemp;
-   root["started"] = getStartFlag;
+   root["started"] = getStartFlag();
    String result;
    serializeJson(root, result);
    return result;
