@@ -121,6 +121,21 @@ struct GlobalState
         return modeValue;
     }
 
+    bool setMode(String mode)
+    {
+        if ( mode == "manual" )
+             state |= MANUAL_MODE;
+        else if (mode == "auto" )
+            state |= AUTO_MODE;
+        else if (mode ==  "no_heating")
+            state |= NO_HEATING;
+        else if (mode == "smoking")
+            state |= SMOKING_MODE;
+        else
+            return false;
+        return true;
+    }
+
     String getHeatingState()
     {
         String heatingState;
@@ -129,6 +144,18 @@ struct GlobalState
         else if (state & HEATING_STATE_OFF )
             heatingState = "off";
         return heatingState;
+    }
+
+    bool setHeatingState(String heating)
+    {
+        if ( heating == "on" )
+            state |= HEATING_STATE_ON;
+        else if (heating == "off" )
+            state |= HEATING_STATE_OFF;
+        else 
+            return false;
+
+        return true;
     }
 
     String getHeatingMode()
@@ -145,6 +172,22 @@ struct GlobalState
         return heatingMode;
     }
 
+    bool setHeatingMode(String mode)
+    {
+        if ( mode ==  "none")
+            state |= HEATING_NONE_STATE;
+        else if ( mode == "drying" )
+            state |= HEATING_DRYING_STATE;
+        else if (mode == "frying" )
+            state |= HEATING_FRYING_STATE;
+        else if (mode == "boiling" )
+            state |= HEATING_BOILING_STATE;
+        else 
+            return false;
+            
+        return true;
+    }
+
     String getConvectionState()
     {
         String convectionState;
@@ -153,6 +196,18 @@ struct GlobalState
         else if (state & CONVECTION_STATE_OFF )
             convectionState = "off";
         return convectionState;
+    }
+
+    bool setConvectionState(String convection)
+    {
+        if ( convection == "on" )
+            state |= CONVECTION_STATE_ON;
+        else if (convection == "off" )
+            state |= CONVECTION_STATE_OFF;
+        else 
+            return false;
+
+        return true;
     }
 
     String getAirPumpState()
@@ -165,6 +220,18 @@ struct GlobalState
         return airPumpState;
     }
 
+    bool setAirPumpState(String airState)
+    {
+        if ( airState == "on" )
+            state |= AIR_PUMP_STATE_ON;
+        else if (airState == "off" )
+            state |= AIR_PUMP_STATE_OFF;
+        else 
+            return false;
+
+        return true;
+    }
+
     String getWaterPumpState()
     {
         String waterPumpState;
@@ -173,6 +240,18 @@ struct GlobalState
         else if (state & WATER_PUMP_STATE_OFF )
             waterPumpState = "off";
         return waterPumpState;
+    }
+
+    bool setWaterPumpState(String waterState)
+    {
+        if ( waterState == "on" )
+            state |= WATER_PUMP_STATE_ON;
+        else if (waterState == "off" )
+            state |= WATER_PUMP_STATE_ON;
+        else 
+            return false;
+
+        return true;
     }
 };
 

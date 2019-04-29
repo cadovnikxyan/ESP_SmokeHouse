@@ -1,6 +1,7 @@
 #ifndef POWERCONTROL_H
 #define POWERCONTROL_H
 #include "common.h"
+#include <Ticker.h>
 
 class PowerControlThread : public Thread
 {
@@ -19,6 +20,8 @@ public:
 
 private:
   double powerValue;
+  Ticker* disableAirPump;
+  Ticker* disableWaterPump;
 
 };
 

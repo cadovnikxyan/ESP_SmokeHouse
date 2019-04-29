@@ -37,11 +37,6 @@ void HeatTreatmentThread::adjustPID()
       pid->SetTunings(aggKp, aggKi, aggKd);
 }
 
-void HeatTreatmentThread::switchHeatingMode()
-{
-   
-}
-
 void HeatTreatmentThread::startTreatment()
 {
    start = time(nullptr);
@@ -52,11 +47,10 @@ void HeatTreatmentThread::stopTreatment()
    stop = time(nullptr);
 }
 
-void HeatTreatmentThread::run() 
+void HeatTreatmentThread::autoMode() 
 {
    if( startingFlag && !processStarted)
    {
-      Serial.println("startTreatment()");
       startTreatment();
       controller->run();
       if ( __globalState__.state & AUTO_MODE )
@@ -65,7 +59,6 @@ void HeatTreatmentThread::run()
       powerControlThread->setConvection(true);
       processStarted = true;
    }
-
    else if ( !startingFlag && processStarted )
    {
       stopTreatment();
@@ -77,13 +70,11 @@ void HeatTreatmentThread::run()
       {
          setPoint = FRYING_OUT_TEMP;
          powerControlThread->setAirPump(true);
-         switchHeatingMode();
       }
       else if (__globalState__.currentProbeTemp >= FRYING_DONE_TEMP )
       {
          setPoint = BOILING_OUT_TEMP;
          powerControlThread->setWaterPump(true);
-         switchHeatingMode();
       }
       else if ( __globalState__.currentProbeTemp >= FULL_DONE_TEMP )
       {
@@ -96,19 +87,56 @@ void HeatTreatmentThread::run()
          pid->Compute();
       }
    }
+}
+
+void HeatTreatmentThread::manualMode() 
+{
+
+}
+
+void HeatTreatmentThread::smokingMode() 
+{
+
+}
+
+void HeatTreatmentThread::noHeatingMode() 
+{
+
+}
+
+void HeatTreatmentThread::run() 
+{
+   if ( __globalState__.state & AUTO_MODE )
+      autoMode();
+   else if ( __globalState__.state & MANUAL_MODE )
+      manualMode();
+   else if ( __globalState__.state & SMOKING_MODE )
+      smokingMode();
+   else if ( __globalState__.state & NO_HEATING )
+      noHeatingMode();
+
    runned();
 }
 
-String HeatTreatmentThread::setConvection(bool state)
+String HeatTreatmentThread::setState(String stringState)
 {
-   PowerControlThread::instance()->setConvection(state);
-   return "true";
-}
+   if ( stringState.length() > 400 )
+      return "";
+      
+   StaticJsonDocument<400> jsonState;
+   deserializeJson(jsonState, stringState);
 
-String HeatTreatmentThread::setHeating(bool state)
-{
-   PowerControlThread::instance()->setHeating();
-   return "true";
+   JsonObject root = jsonState.to<JsonObject>();
+   __globalState__.setMode(root["mode"]);
+   __globalState__.setHeatingState(root["heatingState"]);
+   __globalState__.setHeatingMode(root["heatingMode"]);
+   __globalState__.setConvectionState(root["convectionState"]);
+   __globalState__.setAirPumpState(root["airPumpState"]);
+   __globalState__.setWaterPumpState(root["waterPumpState"]);
+   JsonVariant t = root["startHeatTreatment"];
+   setStart(t.to<bool>);
+
+   return getJsonState();
 }
 
 String HeatTreatmentThread::getJsonTemps() const
@@ -158,6 +186,7 @@ String HeatTreatmentThread::getJsonState() const
 
    root["currentOutTemp"] = __globalState__.currentOutTemp;
    root["currentProbeTemp"] = __globalState__.currentProbeTemp;
+   root["started"] = getStartFlag;
    String result;
    serializeJson(root, result);
    return result;

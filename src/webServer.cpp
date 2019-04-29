@@ -28,14 +28,7 @@ WebServerThread::WebServerThread()
       server->send(200, "application/json", heatTreatmentThread->getCurrentState());
    });
 
-   server->on("/SetHeating", HTTP_POST, [this]()
-   {
-      int args = server->args();
-      String val = server->arg(0);
-      server->send(200, "application/json", heatTreatmentThread->setHeating(val == "true" ? true : false));
-   });
-
-    server->on("/SetWaterPump", HTTP_POST, [this]()
+   server->on("/SetState", HTTP_POST, [this]()
    {
       int args = server->args();
       String val;
@@ -47,35 +40,9 @@ WebServerThread::WebServerThread()
             break;
          }
       }
-      server->send(200, "application/json", heatTreatmentThread->setConvection(val == "true" ? true : false));
-   });
-
-   server->on("/SetConvection", HTTP_POST, [this]()
-   {
-      int args = server->args();
-      String val;
-      for ( int i = 0; i < args; ++i)
-      {
-         val = server->arg(i);
-         if ( val.length() != 0 )
-         {
-            break;
-         }
-      }
-      server->send(200, "application/json", heatTreatmentThread->setConvection(val == "true" ? true : false));
-   });
-
-   server->on("/StartHeatTreatment", HTTP_POST, [this]()
-   {
-      String respose = "{started : false}";
-      if ( controller->shouldRun() )
-      {
-         Serial.println("Start Treatment");
-         heatTreatmentThread->setStart(true);
+      server->send(200,"application/json", heatTreatmentThread->setState(val));
+      if ( true == heatTreatmentThread->getStartFlag() && controller->shouldRun() )
          controller->add(heatTreatmentThread);
-         respose = "{started : true}";
-      }
-      server->send(200, "application/json", respose);
    });
 
    server->onNotFound([this]()

@@ -1,9 +1,23 @@
 #include "powercontrol.h"
 
+
 const static int relays[] = {RELAY_PIN_1, RELAY_PIN_2, RELAY_PIN_3, RELAY_PIN_4, RELAY_PIN_5, RELAY_PIN_6};
+void disableAir()
+{
+   PowerControlThread::instance()->setAirPump(false);
+}
+
+void disableWater()
+{
+   PowerControlThread::instance()->setWaterPump(false);
+}
 
 DECLARATE_INSTANCE(PowerControlThread)
 PowerControlThread::PowerControlThread()
+: 
+   powerValue(0),
+   disableAirPump(new Ticker),
+   disableWaterPump(new Ticker)
 {
    for ( auto i : relays )
       pinMode(i, OUTPUT);
@@ -51,6 +65,7 @@ void PowerControlThread::setWaterPump(bool state)
    {
       onRelay(WATER_PUMP, HIGH);
       __globalState__.state |= WATER_PUMP_STATE_ON;
+      disableWaterPump->once(180, disableWater);
    }
    else 
    {
@@ -65,6 +80,7 @@ void PowerControlThread::setAirPump(bool state)
    {
       onRelay(AIR_PUMP, HIGH);
     __globalState__.state |= AIR_PUMP_STATE_ON;
+    disableAirPump->once(900, disableAir);
    }
    else
    {
