@@ -7,10 +7,10 @@ WebServerThread::WebServerThread()
      heatTreatmentThread(HeatTreatmentThread::instance()),
      controller(new ThreadController)
 {
-   if (!MDNS.begin("cadovnik_esp8266")){
+   if (!mdns.begin("cadovnik_esp8266")){
       Serial.println("failed to start MDNS");
    }
-   MDNS.addService("https", "tcp", 443);
+   mdns.addService("http", "tcp", 80);
    controller->add(heatTreatmentThread);
    heatTreatmentThread->setInterval(100);
    server->on("/", HTTP_GET, [this]()
@@ -40,6 +40,7 @@ WebServerThread::WebServerThread()
             break;
          }
       }
+      Serial.println(val);
       server->send(200,"application/json", heatTreatmentThread->setState(val));
       if ( true == heatTreatmentThread->getStartFlag() && controller->shouldRun() )
          controller->add(heatTreatmentThread);
@@ -77,7 +78,7 @@ void WebServerThread::handleNotFound()
 void WebServerThread::run()
 {
    server->handleClient();
-  if (! MDNS.update()) {
+  if (! mdns.update()) {
      Serial.println("failed to update MDNS!");
   }
    controller->run();

@@ -119,23 +119,18 @@ void HeatTreatmentThread::run()
 }
 
 String HeatTreatmentThread::setState(String stringState)
-{
-   if ( stringState.length() > 400 )
-      return "";
-      
-   StaticJsonDocument<400> jsonState;
-   deserializeJson(jsonState, stringState);
+{     
+   DynamicJsonDocument root(400);
+   deserializeJson(root, stringState);
 
-   JsonObject root = jsonState.to<JsonObject>();
-   __globalState__.setMode(root["mode"]);
-   __globalState__.setHeatingState(root["heatingState"]);
-   __globalState__.setHeatingMode(root["heatingMode"]);
-   __globalState__.setConvectionState(root["convectionState"]);
-   __globalState__.setAirPumpState(root["airPumpState"]);
-   __globalState__.setWaterPumpState(root["waterPumpState"]);
-   bool t = root["startHeatTreatment"];
-   setStart(t);
+   __globalState__.setMode(root["mode"].as<String>());
+   __globalState__.setHeatingMode(root["heatingMode"].as<String>());
+   __globalState__.setHeatingState(root["heatingState"].as<bool>());
+   __globalState__.setConvectionState(root["convectionState"].as<bool>());
+   __globalState__.setAirPumpState(root["airPumpState"].as<bool>());
+   __globalState__.setWaterPumpState(root["waterPumpState"].as<bool>());
 
+   setStart(root["startHeatTreatment"].as<bool>());
    return getJsonState();
 }
 
@@ -148,8 +143,7 @@ String HeatTreatmentThread::getJsonTemps() const
    String probe = ProbeThread::instance()->getJsonProbeTemp();
    deserializeJson(jsonTemp, temp);
    deserializeJson(jsonProbe, probe);
-   StaticJsonDocument<400> jsonBuffer;
-   JsonObject root = jsonBuffer.to<JsonObject>();
+   StaticJsonDocument<400> root;
    root["temp"] = jsonTemp.to<JsonObject>();
    root["probe"] = jsonProbe.to<JsonObject>();
    String result;
@@ -174,8 +168,7 @@ String HeatTreatmentThread::getCurrentState() const
 
 String HeatTreatmentThread::getJsonState() const
 {
-   StaticJsonDocument<400> jsonState;
-   JsonObject root = jsonState.to<JsonObject>();
+   StaticJsonDocument<400> root;
 
    root["mode"] = __globalState__.getMode();
    root["heatingState"] = __globalState__.getHeatingState();
