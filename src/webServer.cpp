@@ -40,7 +40,6 @@ WebServerThread::WebServerThread()
             break;
          }
       }
-      Serial.println(val);
       server->send(200,"application/json", heatTreatmentThread->setState(val));
       if ( true == heatTreatmentThread->getStartFlag() && controller->shouldRun() )
          controller->add(heatTreatmentThread);

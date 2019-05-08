@@ -49,13 +49,13 @@ void PowerControlThread::setConvection(bool state)
    {
       onRelay(CONVECTION_COOLER_2, HIGH);
       onRelay(CONVECTION_COOLER_1, HIGH);
-      __globalState__.state |= CONVECTION_STATE_ON;
+      __globalState__.state.convection = CONVECTION_STATE_ON;
    }
    else
    {
       onRelay(CONVECTION_COOLER_1, LOW);
       onRelay(CONVECTION_COOLER_2, LOW);
-      __globalState__.state |= CONVECTION_STATE_OFF;
+      __globalState__.state.convection = CONVECTION_STATE_OFF;
    }
 }
 
@@ -64,13 +64,13 @@ void PowerControlThread::setWaterPump(bool state)
    if ( state )
    {
       onRelay(WATER_PUMP, HIGH);
-      __globalState__.state |= WATER_PUMP_STATE_ON;
+      __globalState__.state.water = WATER_PUMP_STATE_ON;
       disableWaterPump->once(180, disableWater);
    }
    else 
    {
       onRelay(WATER_PUMP, LOW);
-      __globalState__.state |= WATER_PUMP_STATE_OFF;
+      __globalState__.state.water = WATER_PUMP_STATE_OFF;
    }
 }
 
@@ -79,13 +79,13 @@ void PowerControlThread::setAirPump(bool state)
    if ( state )
    {
       onRelay(AIR_PUMP, HIGH);
-    __globalState__.state |= AIR_PUMP_STATE_ON;
+    __globalState__.state.air = AIR_PUMP_STATE_ON;
     disableAirPump->once(900, disableAir);
    }
    else
    {
       onRelay(AIR_PUMP, LOW);
-    __globalState__.state |= AIR_PUMP_STATE_OFF;
+    __globalState__.state.air = AIR_PUMP_STATE_OFF;
    }
 }
 
@@ -93,6 +93,6 @@ void PowerControlThread::run()
 {
    setHeating();
    if ( powerValue > 0 )
-     __globalState__.state |= HEATING_STATE_ON;
+     __globalState__.state.heating_state = HEATING_STATE_ON;
    runned();
 }

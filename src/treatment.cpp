@@ -53,7 +53,7 @@ void HeatTreatmentThread::autoMode()
    {
       startTreatment();
       controller->run();
-      if ( __globalState__.state & AUTO_MODE )
+      if ( __globalState__.state.mode == AUTO_MODE )
          setUpPID(); 
 
       powerControlThread->setConvection(true);
@@ -91,12 +91,40 @@ void HeatTreatmentThread::autoMode()
 
 void HeatTreatmentThread::manualMode() 
 {
+ if( startingFlag && !processStarted )
+   {
+      startTreatment();
+      controller->run(); 
+      powerControlThread->setConvection(true);
+      processStarted = true;
+   }
+   else if ( !startingFlag && processStarted )
+   {
+      stopTreatment();
+   }
 
+   if ( processStarted )
+   {
+      if (__globalState__.currentProbeTemp >= DRYING_DONE_TEMP )
+      {
+         powerControlThread->setAirPump(true);
+      }
+      else if (__globalState__.currentProbeTemp >= FRYING_DONE_TEMP )
+      {
+         powerControlThread->setWaterPump(true);
+      }
+      else if ( __globalState__.currentProbeTemp >= FULL_DONE_TEMP )
+      {
+         processStarted = false;
+         startingFlag = false;
+      }
+   }
 }
 
 void HeatTreatmentThread::smokingMode() 
 {
-
+     powerControlThread->setConvection(true);
+     powerControlThread->setAirPump(true);
 }
 
 void HeatTreatmentThread::noHeatingMode() 
@@ -106,13 +134,13 @@ void HeatTreatmentThread::noHeatingMode()
 
 void HeatTreatmentThread::run() 
 {
-   if ( __globalState__.state & AUTO_MODE )
+   if ( __globalState__.state.mode == AUTO_MODE )
       autoMode();
-   else if ( __globalState__.state & MANUAL_MODE )
+   else if ( __globalState__.state.mode == MANUAL_MODE )
       manualMode();
-   else if ( __globalState__.state & SMOKING_MODE )
+   else if ( __globalState__.state.mode == SMOKING_MODE )
       smokingMode();
-   else if ( __globalState__.state & NO_HEATING )
+   else if ( __globalState__.state.mode == NO_HEATING )
       noHeatingMode();
 
    runned();
@@ -125,12 +153,13 @@ String HeatTreatmentThread::setState(String stringState)
 
    __globalState__.setMode(root["mode"].as<String>());
    __globalState__.setHeatingMode(root["heatingMode"].as<String>());
+   
    __globalState__.setHeatingState(root["heatingState"].as<bool>());
    __globalState__.setConvectionState(root["convectionState"].as<bool>());
    __globalState__.setAirPumpState(root["airPumpState"].as<bool>());
    __globalState__.setWaterPumpState(root["waterPumpState"].as<bool>());
 
-   setStart(root["startHeatTreatment"].as<bool>());
+   setStart(root["started"].as<bool>());
    return getJsonState();
 }
 

@@ -91,32 +91,53 @@ State field description :
 #define WATER_PUMP_STATE_ON      0x000001
 #define WATER_PUMP_STATE_OFF     0x000002
 
+struct State{
+    int mode;
+    int heating_state;
+    int heating_mode;
+    int convection;
+    int air;
+    int water;
+    State(){
+        mode =  MANUAL_MODE;
+        heating_state =  HEATING_STATE_OFF;
+        heating_mode =  HEATING_NONE_STATE;
+        convection =  CONVECTION_STATE_OFF;
+        air =  AIR_PUMP_STATE_OFF;
+        water =  WATER_PUMP_STATE_OFF;
+    }
+    operator int(){
+        int state = 0x000000;
+        state |=  mode;
+        state |=  heating_mode;
+        state |=  heating_state;
+        state |=  convection;
+        state |=  air;
+        state |=  water;
+        return state;
+    }
+};
+
 struct GlobalState
 {
     double currentOutTemp;
     double currentProbeTemp;
-    int state;
+    State state;
     GlobalState():
-    state(0x000000)
+    state()
     {
-        state |=  MANUAL_MODE;
-        state |=  HEATING_STATE_OFF;
-        state |=  HEATING_NONE_STATE;
-        state |=  CONVECTION_STATE_OFF;
-        state |=  AIR_PUMP_STATE_OFF;
-        state |=  WATER_PUMP_STATE_OFF;
     }
 
     String getMode()
     {
         String modeValue;
-        if ( state & MANUAL_MODE )
+        if ( state.mode == MANUAL_MODE )
             modeValue = "manual";
-        else if (state & AUTO_MODE )
+        else if (state.mode == AUTO_MODE )
             modeValue = "auto";
-        else if (state & NO_HEATING )
+        else if (state.mode == NO_HEATING )
             modeValue = "no_heating";
-        else if (state & SMOKING_MODE )
+        else if (state.mode == SMOKING_MODE )
             modeValue = "smoking";
         return modeValue;
     }
@@ -124,13 +145,13 @@ struct GlobalState
     bool setMode(String mode)
     {
         if ( mode == "manual" )
-             state |= MANUAL_MODE;
+             state.mode = MANUAL_MODE;
         else if (mode == "auto" )
-            state |= AUTO_MODE;
+            state.mode = AUTO_MODE;
         else if (mode ==  "no_heating")
-            state |= NO_HEATING;
+            state.mode = NO_HEATING;
         else if (mode == "smoking")
-            state |= SMOKING_MODE;
+            state.mode = SMOKING_MODE;
         else
             return false;
         return true;
@@ -138,34 +159,27 @@ struct GlobalState
 
     bool getHeatingState()
     {
-        bool heatingState;
-        if ( state & HEATING_STATE_ON )
-            heatingState = true;
-        else if (state & HEATING_STATE_OFF )
-            heatingState = false;
-        return heatingState;
+        return ( state.heating_state == HEATING_STATE_ON );
     }
 
-    bool setHeatingState(bool heating)
+    void setHeatingState(bool heating)
     {
         if ( heating )
-            state |= HEATING_STATE_ON;
+            state.heating_state = HEATING_STATE_ON;
         else
-            state |= HEATING_STATE_OFF;
-
-        return true;
+            state.heating_state = HEATING_STATE_OFF;
     }
 
     String getHeatingMode()
     {
         String heatingMode;
-        if ( state & HEATING_NONE_STATE )
+        if ( state.heating_mode == HEATING_NONE_STATE )
             heatingMode = "none";
-        else if ( state & HEATING_DRYING_STATE )
+        else if ( state.heating_mode == HEATING_DRYING_STATE )
             heatingMode = "drying";
-        else if (state & HEATING_FRYING_STATE )
+        else if (state.heating_mode == HEATING_FRYING_STATE )
             heatingMode = "frying";
-        else if (state & HEATING_BOILING_STATE )
+        else if (state.heating_mode == HEATING_BOILING_STATE )
             heatingMode = "boiling";
         return heatingMode;
     }
@@ -173,13 +187,13 @@ struct GlobalState
     bool setHeatingMode(String mode)
     {
         if ( mode ==  "none")
-            state |= HEATING_NONE_STATE;
+            state.heating_mode = HEATING_NONE_STATE;
         else if ( mode == "drying" )
-            state |= HEATING_DRYING_STATE;
+            state.heating_mode = HEATING_DRYING_STATE;
         else if (mode == "frying" )
-            state |= HEATING_FRYING_STATE;
+            state.heating_mode = HEATING_FRYING_STATE;
         else if (mode == "boiling" )
-            state |= HEATING_BOILING_STATE;
+            state.heating_mode = HEATING_BOILING_STATE;
         else 
             return false;
             
@@ -188,62 +202,41 @@ struct GlobalState
 
     bool getConvectionState()
     {
-        bool convectionState;
-        if ( state & CONVECTION_STATE_ON )
-            convectionState = true;
-        else if (state & CONVECTION_STATE_OFF )
-            convectionState = false;
-        return convectionState;
+        return ( state.convection == CONVECTION_STATE_ON );
     }
 
-    bool setConvectionState(bool convection)
+    void setConvectionState(bool convection)
     {
         if ( convection )
-            state |= CONVECTION_STATE_ON;
+            state.convection = CONVECTION_STATE_ON;
         else
-            state |= CONVECTION_STATE_OFF;
-        
-        return true;
+            state.convection = CONVECTION_STATE_OFF;
     }
 
     bool getAirPumpState()
     {
-        bool airPumpState;
-        if ( state & AIR_PUMP_STATE_ON )
-            airPumpState = true;
-        else if (state & AIR_PUMP_STATE_OFF )
-            airPumpState = false;
-        return airPumpState;
+        return ( state.air == AIR_PUMP_STATE_ON );
     }
 
-    bool setAirPumpState(bool airState)
+    void setAirPumpState(bool airState)
     {
         if ( airState )
-            state |= AIR_PUMP_STATE_ON;
+            state.air = AIR_PUMP_STATE_ON;
         else
-            state |= AIR_PUMP_STATE_OFF;
-
-        return true;
+            state.air = AIR_PUMP_STATE_OFF;
     }
 
     bool getWaterPumpState()
     {
-        bool waterPumpState;
-        if ( state & WATER_PUMP_STATE_ON )
-            waterPumpState = true;
-        else if (state & WATER_PUMP_STATE_OFF )
-            waterPumpState = false;
-        return waterPumpState;
+        return ( state.water == WATER_PUMP_STATE_ON );
     }
 
-    bool setWaterPumpState(bool waterState)
+    void setWaterPumpState(bool waterState)
     {
         if ( waterState )
-            state |= WATER_PUMP_STATE_ON;
+            state.water = WATER_PUMP_STATE_ON;
         else
-            state |= WATER_PUMP_STATE_OFF;
-
-        return true;
+            state.water = WATER_PUMP_STATE_OFF;
     }
 };
 

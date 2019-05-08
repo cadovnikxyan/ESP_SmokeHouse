@@ -32,13 +32,13 @@ double ProbeThread::getTemp()
    steinhart -= 273.15;
    
    if ( steinhart <= DRYING_DONE_TEMP )
-      __globalState__.state |= HEATING_DRYING_STATE;
+      __globalState__.state.heating_mode = HEATING_DRYING_STATE;
    else if ( steinhart < DRYING_DONE_TEMP && steinhart < FRYING_DONE_TEMP )
-      __globalState__.state |= HEATING_FRYING_STATE;
+      __globalState__.state.heating_mode = HEATING_FRYING_STATE;
    else if ( steinhart < FRYING_DONE_TEMP && steinhart < FULL_DONE_TEMP )
-      __globalState__.state |= HEATING_BOILING_STATE;
+      __globalState__.state.heating_mode = HEATING_BOILING_STATE;
    else 
-      __globalState__.state |= HEATING_NONE_STATE;
+      __globalState__.state.heating_mode = HEATING_NONE_STATE;
 
    return steinhart;
 }
