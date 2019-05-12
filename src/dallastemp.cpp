@@ -17,18 +17,21 @@ DallasTempThread::~DallasTempThread()
 
 String DallasTempThread::getJsonTemp()
 {
+   temp->begin();
    temp->requestTemperatures();
-   tempValue1 = temp->getTempCByIndex(0);
-   tempValue2 = temp->getTempCByIndex(1);
-   tempValue3 = temp->getTempCByIndex(2);
-   __globalState__.currentOutTemp = *getResultTemp();
+   int count = temp->getDeviceCount();
+   temps.clear();
+   StaticJsonDocument<200> root;
+   for ( int i = 0; i < count ; ++i)
+   {
+      float t = temp->getTempCByIndex(i);
+      temps.push_back(t);
+      root[String("temp") + String(i)] = t;
+   }
+   getResultTemp();
+   __globalState__.currentOutTemp = resultTemp;
    Serial.print("Device count: ");
-   Serial.println(temp->getDeviceCount());
-   StaticJsonDocument<200> jsonBuffer;
-   JsonObject root = jsonBuffer.to<JsonObject>();
-   root["temp1"] = tempValue1;
-   root["temp2"] = tempValue2;
-   root["temp3"] = tempValue3;
+   Serial.println(count);
    String result;
    serializeJson(root, result);
    return result;
@@ -36,7 +39,13 @@ String DallasTempThread::getJsonTemp()
 
 float DallasTempThread::calculateAverage() const
 {
-   return (tempValue1 + tempValue2 + tempValue3) / 3;
+   float tempSum = 0;
+   for ( auto t : temps)
+      tempSum += t;
+   if ( temps.empty() )
+      return tempSum;
+
+   return tempSum / temps.size();
 }
 
 double* DallasTempThread::getResultTemp()
@@ -48,11 +57,15 @@ double* DallasTempThread::getResultTemp()
 
 void DallasTempThread::run()
 {
+   temp->begin();
    temp->requestTemperatures();
-   tempValue1 = temp->getTempCByIndex(0);
-   tempValue2 = temp->getTempCByIndex(1);
-   tempValue3 = temp->getTempCByIndex(2);
-   __globalState__.currentOutTemp = *getResultTemp();
+   int count = temp->getDeviceCount();
+   temps.clear();
+   for ( int i = 0; i < count ; ++i)
+      temps.push_back(temp->getTempCByIndex(i));
+
+    getResultTemp();
+   __globalState__.currentOutTemp = resultTemp;
    Serial.print("Out temp");
    Serial.println(__globalState__.currentOutTemp);
    runned();

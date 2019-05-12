@@ -8,9 +8,7 @@ class DallasTempThread : public Thread
 {
   OneWire* tempWire;
   DallasTemperature* temp;
-  float tempValue1;
-  float tempValue2;
-  float tempValue3;
+  std::vector<float> temps;
   double resultTemp;
   ~DallasTempThread();
 

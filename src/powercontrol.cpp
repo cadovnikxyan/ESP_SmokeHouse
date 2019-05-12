@@ -12,12 +12,18 @@ void disableWater()
    PowerControlThread::instance()->setWaterPump(false);
 }
 
+void disableIgnition()
+{
+   PowerControlThread::instance()->setIgnition(false);
+}
+
 DECLARATE_INSTANCE(PowerControlThread)
 PowerControlThread::PowerControlThread()
 : 
    powerValue(0),
    disableAirPump(new Ticker),
-   disableWaterPump(new Ticker)
+   disableWaterPump(new Ticker),
+   disableIgnitionModule(new Ticker)
 {
    for ( auto i : relays )
       pinMode(i, OUTPUT);
@@ -86,6 +92,21 @@ void PowerControlThread::setAirPump(bool state)
    {
       onRelay(AIR_PUMP, LOW);
     __globalState__.state.air = AIR_PUMP_STATE_OFF;
+   }
+}
+
+void PowerControlThread::setIgnition(bool state)
+{
+   if ( state )
+   {
+      onRelay(IGNITION, HIGH);
+      __globalState__.state.air = IGNITION_MODULE_STATE_ON;
+      disableIgnitionModule->once(50, disableIgnition);
+   }
+   else
+   {
+      onRelay(AIR_PUMP, LOW);
+      __globalState__.state.air = IGNITION_MODULE_STATE_OFF;
    }
 }
 

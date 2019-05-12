@@ -22,14 +22,15 @@
                                     }    
 
 #define THERMISTORPIN A0 
-#define TEMP_PIN      D0
+#define TEMP_PIN      D8
 #define RELAY_PIN_1   D1 // TEH_TOP
 #define RELAY_PIN_2   D2 // TEH_BOTTOM
 #define RELAY_PIN_3   D3 // WATER_PUMP
 #define RELAY_PIN_4   D4 // AIR_PUMP
 #define RELAY_PIN_5   D5 // CONVECTION_COOLER_1
 #define RELAY_PIN_6   D6 // CONVECTION_COOLER_2
-#define RELAY_COUNT   6
+#define RELAY_PIN_7   D7 // IGNITION
+#define RELAY_COUNT   7
 
 #define TEH_TOP             RELAY_PIN_1
 #define TEH_BOTTOM          RELAY_PIN_2
@@ -37,12 +38,12 @@
 #define AIR_PUMP            RELAY_PIN_4
 #define CONVECTION_COOLER_1 RELAY_PIN_5
 #define CONVECTION_COOLER_2 RELAY_PIN_6
+#define IGNITION            RELAY_PIN_7
 
-#define SO            D7 //NOT_USED
 #define CS            D8 //NOT_USED
 
 #define B 3899
-#define SERIAL_R 10000
+#define SERIAL_R 100000
 #define THERMISTOR_R 200000
 #define NOMINAL_T 25
 
@@ -69,27 +70,30 @@ State field description :
 
 */
 
-#define MANUAL_MODE              0x100000
-#define AUTO_MODE                0x200000
-#define NO_HEATING               0x300000
-#define SMOKING_MODE             0x400000
+#define MANUAL_MODE              0x1000000
+#define AUTO_MODE                0x2000000
+#define NO_HEATING               0x3000000
+#define SMOKING_MODE             0x4000000
 
-#define HEATING_STATE_ON         0x010000
-#define HEATING_STATE_OFF        0x020000
+#define HEATING_STATE_ON         0x0100000
+#define HEATING_STATE_OFF        0x0200000
 
-#define HEATING_NONE_STATE       0x001000
-#define HEATING_DRYING_STATE     0x002000
-#define HEATING_FRYING_STATE     0x003000
-#define HEATING_BOILING_STATE    0x004000
+#define HEATING_NONE_STATE       0x0010000
+#define HEATING_DRYING_STATE     0x0020000
+#define HEATING_FRYING_STATE     0x0030000
+#define HEATING_BOILING_STATE    0x0040000
 
-#define CONVECTION_STATE_ON      0x000100
-#define CONVECTION_STATE_OFF     0x000200
+#define CONVECTION_STATE_ON      0x0001000
+#define CONVECTION_STATE_OFF     0x0002000
 
-#define AIR_PUMP_STATE_ON        0x000010
-#define AIR_PUMP_STATE_OFF       0x000020
+#define AIR_PUMP_STATE_ON        0x0000100
+#define AIR_PUMP_STATE_OFF       0x0000200
 
-#define WATER_PUMP_STATE_ON      0x000001
-#define WATER_PUMP_STATE_OFF     0x000002
+#define WATER_PUMP_STATE_ON      0x0000010
+#define WATER_PUMP_STATE_OFF     0x0000020
+
+#define IGNITION_MODULE_STATE_ON    0x0000001
+#define IGNITION_MODULE_STATE_OFF    0x0000002
 
 struct State{
     int mode;
@@ -98,6 +102,7 @@ struct State{
     int convection;
     int air;
     int water;
+    int ignition;
     State(){
         mode =  MANUAL_MODE;
         heating_state =  HEATING_STATE_OFF;
@@ -105,15 +110,17 @@ struct State{
         convection =  CONVECTION_STATE_OFF;
         air =  AIR_PUMP_STATE_OFF;
         water =  WATER_PUMP_STATE_OFF;
+        ignition = IGNITION_MODULE_STATE_OFF;
     }
     operator int(){
-        int state = 0x000000;
+        int state = 0x0000000;
         state |=  mode;
         state |=  heating_mode;
         state |=  heating_state;
         state |=  convection;
         state |=  air;
         state |=  water;
+        state |=  ignition;
         return state;
     }
 };
@@ -145,7 +152,7 @@ struct GlobalState
     bool setMode(String mode)
     {
         if ( mode == "manual" )
-             state.mode = MANUAL_MODE;
+            state.mode = MANUAL_MODE;
         else if (mode == "auto" )
             state.mode = AUTO_MODE;
         else if (mode ==  "no_heating")
@@ -177,9 +184,9 @@ struct GlobalState
             heatingMode = "none";
         else if ( state.heating_mode == HEATING_DRYING_STATE )
             heatingMode = "drying";
-        else if (state.heating_mode == HEATING_FRYING_STATE )
+        else if ( state.heating_mode == HEATING_FRYING_STATE )
             heatingMode = "frying";
-        else if (state.heating_mode == HEATING_BOILING_STATE )
+        else if ( state.heating_mode == HEATING_BOILING_STATE )
             heatingMode = "boiling";
         return heatingMode;
     }
@@ -190,9 +197,9 @@ struct GlobalState
             state.heating_mode = HEATING_NONE_STATE;
         else if ( mode == "drying" )
             state.heating_mode = HEATING_DRYING_STATE;
-        else if (mode == "frying" )
+        else if ( mode == "frying" )
             state.heating_mode = HEATING_FRYING_STATE;
-        else if (mode == "boiling" )
+        else if ( mode == "boiling" )
             state.heating_mode = HEATING_BOILING_STATE;
         else 
             return false;
@@ -237,6 +244,19 @@ struct GlobalState
             state.water = WATER_PUMP_STATE_ON;
         else
             state.water = WATER_PUMP_STATE_OFF;
+    }
+
+    bool getIgnitionState()
+    {
+        return ( state.ignition == IGNITION_MODULE_STATE_ON );
+    }
+
+    void setIgnitionState(bool ignitionState)
+    {
+        if ( ignitionState )
+            state.ignition = IGNITION_MODULE_STATE_ON;
+        else
+            state.ignition = IGNITION_MODULE_STATE_OFF;
     }
 };
 

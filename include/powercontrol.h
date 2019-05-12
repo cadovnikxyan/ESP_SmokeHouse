@@ -14,6 +14,8 @@ public:
   void setConvection(bool state);
   void setWaterPump(bool state);
   void setAirPump(bool state);
+  void setIgnition(bool state);
+
   double* getPowerValuePtr(){ return &powerValue; }
   inline void onRelay(int relayPin, int value);
   void run() override;
@@ -22,6 +24,7 @@ private:
   double powerValue;
   Ticker* disableAirPump;
   Ticker* disableWaterPump;
+  Ticker* disableIgnitionModule;
 
 };
 

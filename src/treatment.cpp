@@ -158,6 +158,7 @@ String HeatTreatmentThread::setState(String stringState)
    __globalState__.setConvectionState(root["convectionState"].as<bool>());
    __globalState__.setAirPumpState(root["airPumpState"].as<bool>());
    __globalState__.setWaterPumpState(root["waterPumpState"].as<bool>());
+   __globalState__.setIgnitionState(root["ignitionState"].as<bool>());
 
    setStart(root["started"].as<bool>());
    return getJsonState();
@@ -170,6 +171,7 @@ String HeatTreatmentThread::getJsonTemps() const
    String temp = DallasTempThread::instance()->getJsonTemp();
    Serial.println(temp);
    String probe = ProbeThread::instance()->getJsonProbeTemp();
+   Serial.println(probe);
    deserializeJson(jsonTemp, temp);
    deserializeJson(jsonProbe, probe);
    StaticJsonDocument<400> root;
@@ -200,11 +202,13 @@ String HeatTreatmentThread::getJsonState() const
    StaticJsonDocument<400> root;
 
    root["mode"] = __globalState__.getMode();
-   root["heatingState"] = __globalState__.getHeatingState();
    root["heatingMode"] = __globalState__.getHeatingMode();
+
+   root["heatingState"] = __globalState__.getHeatingState();
    root["convectionState"] = __globalState__.getConvectionState();
    root["airPumpState"] = __globalState__.getAirPumpState();
    root["waterPumpState"] = __globalState__.getWaterPumpState();
+   root["ignitionState"] = __globalState__.getIgnitionState();
 
    root["currentOutTemp"] = __globalState__.currentOutTemp;
    root["currentProbeTemp"] = __globalState__.currentProbeTemp;
