@@ -29,9 +29,7 @@ String DallasTempThread::getJsonTemp()
       root[String("temp") + String(i)] = t;
    }
    getResultTemp();
-   __globalState__.currentOutTemp = resultTemp;
-   Serial.print("Device count: ");
-   Serial.println(count);
+   GlobalState::instance()->currentOutTemp = resultTemp;
    String result;
    serializeJson(root, result);
    return result;
@@ -65,9 +63,7 @@ void DallasTempThread::run()
       temps.push_back(temp->getTempCByIndex(i));
 
     getResultTemp();
-   __globalState__.currentOutTemp = resultTemp;
-   Serial.print("Out temp");
-   Serial.println(__globalState__.currentOutTemp);
+   GlobalState::instance()->currentOutTemp = resultTemp;
    runned();
 }
 

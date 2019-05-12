@@ -96,6 +96,7 @@ State field description :
 #define IGNITION_MODULE_STATE_OFF    0x0000002
 
 struct State{
+    
     int mode;
     int heating_state;
     int heating_mode;
@@ -127,14 +128,26 @@ struct State{
 
 struct GlobalState
 {
+    DEFINE_INSTANCE(GlobalState)
     double currentOutTemp;
     double currentProbeTemp;
     State state;
-    GlobalState():
-    state()
-    {
-    }
+    private:
+        GlobalState(const GlobalState& other)
+        {
+            state = other.state;
+            currentOutTemp = other.currentOutTemp;
+            currentProbeTemp = other.currentProbeTemp;
+        }
+        GlobalState& operator=(const GlobalState& other)
+        {
+            state = other.state;
+            currentOutTemp = other.currentOutTemp;
+            currentProbeTemp = other.currentProbeTemp;
+            return *this;
+        }
 
+    public:
     String getMode()
     {
         String modeValue;
@@ -260,6 +273,5 @@ struct GlobalState
     }
 };
 
-static GlobalState __globalState__;
 
 #endif

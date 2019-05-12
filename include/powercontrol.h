@@ -22,7 +22,6 @@ public:
 
 private:
   double powerValue;
-  Ticker* disableAirPump;
   Ticker* disableWaterPump;
   Ticker* disableIgnitionModule;
 

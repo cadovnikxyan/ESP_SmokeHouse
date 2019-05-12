@@ -53,7 +53,7 @@ void HeatTreatmentThread::autoMode()
    {
       startTreatment();
       controller->run();
-      if ( __globalState__.state.mode == AUTO_MODE )
+      if ( GlobalState::instance()->state.mode == AUTO_MODE )
          setUpPID(); 
 
       powerControlThread->setConvection(true);
@@ -66,17 +66,19 @@ void HeatTreatmentThread::autoMode()
 
    if ( processStarted )
    {
-      if (__globalState__.currentProbeTemp >= DRYING_DONE_TEMP )
+      if (GlobalState::instance()->currentProbeTemp >= DRYING_DONE_TEMP )
       {
          setPoint = FRYING_OUT_TEMP;
          powerControlThread->setAirPump(true);
       }
-      else if (__globalState__.currentProbeTemp >= FRYING_DONE_TEMP )
+      else if (GlobalState::instance()->currentProbeTemp >= FRYING_DONE_TEMP )
       {
          setPoint = BOILING_OUT_TEMP;
+         powerControlThread->setConvection(false);
+         powerControlThread->setAirPump(false);
          powerControlThread->setWaterPump(true);
       }
-      else if ( __globalState__.currentProbeTemp >= FULL_DONE_TEMP )
+      else if ( GlobalState::instance()->currentProbeTemp >= FULL_DONE_TEMP )
       {
          processStarted = false;
          startingFlag = false;
@@ -105,15 +107,17 @@ void HeatTreatmentThread::manualMode()
 
    if ( processStarted )
    {
-      if (__globalState__.currentProbeTemp >= DRYING_DONE_TEMP )
+      if (GlobalState::instance()->currentProbeTemp >= DRYING_DONE_TEMP )
       {
          powerControlThread->setAirPump(true);
       }
-      else if (__globalState__.currentProbeTemp >= FRYING_DONE_TEMP )
+      else if (GlobalState::instance()->currentProbeTemp >= FRYING_DONE_TEMP )
       {
+         powerControlThread->setConvection(false);
+         powerControlThread->setAirPump(false);
          powerControlThread->setWaterPump(true);
       }
-      else if ( __globalState__.currentProbeTemp >= FULL_DONE_TEMP )
+      else if ( GlobalState::instance()->currentProbeTemp >= FULL_DONE_TEMP )
       {
          processStarted = false;
          startingFlag = false;
@@ -134,13 +138,13 @@ void HeatTreatmentThread::noHeatingMode()
 
 void HeatTreatmentThread::run() 
 {
-   if ( __globalState__.state.mode == AUTO_MODE )
+   if ( GlobalState::instance()->state.mode == AUTO_MODE )
       autoMode();
-   else if ( __globalState__.state.mode == MANUAL_MODE )
+   else if ( GlobalState::instance()->state.mode == MANUAL_MODE )
       manualMode();
-   else if ( __globalState__.state.mode == SMOKING_MODE )
+   else if ( GlobalState::instance()->state.mode == SMOKING_MODE )
       smokingMode();
-   else if ( __globalState__.state.mode == NO_HEATING )
+   else if ( GlobalState::instance()->state.mode == NO_HEATING )
       noHeatingMode();
 
    runned();
@@ -150,15 +154,15 @@ String HeatTreatmentThread::setState(String stringState)
 {     
    DynamicJsonDocument root(400);
    deserializeJson(root, stringState);
-
-   __globalState__.setMode(root["mode"].as<String>());
-   __globalState__.setHeatingMode(root["heatingMode"].as<String>());
+   GlobalState::instance()->setMode(root["mode"].as<String>());
+   GlobalState::instance()->setHeatingMode(root["heatingMode"].as<String>());
    
-   __globalState__.setHeatingState(root["heatingState"].as<bool>());
-   __globalState__.setConvectionState(root["convectionState"].as<bool>());
-   __globalState__.setAirPumpState(root["airPumpState"].as<bool>());
-   __globalState__.setWaterPumpState(root["waterPumpState"].as<bool>());
-   __globalState__.setIgnitionState(root["ignitionState"].as<bool>());
+   GlobalState::instance()->setHeatingState(root["heatingState"].as<bool>());
+
+   powerControlThread->setConvection(root["convectionState"].as<bool>());
+   powerControlThread->setAirPump(root["airPumpState"].as<bool>());
+   powerControlThread->setWaterPump(root["waterPumpState"].as<bool>());
+   powerControlThread->setIgnition(root["ignitionState"].as<bool>());
 
    setStart(root["started"].as<bool>());
    return getJsonState();
@@ -169,14 +173,12 @@ String HeatTreatmentThread::getJsonTemps() const
    StaticJsonDocument<200> jsonTemp;
    StaticJsonDocument<200> jsonProbe;
    String temp = DallasTempThread::instance()->getJsonTemp();
-   Serial.println(temp);
    String probe = ProbeThread::instance()->getJsonProbeTemp();
-   Serial.println(probe);
    deserializeJson(jsonTemp, temp);
    deserializeJson(jsonProbe, probe);
    StaticJsonDocument<400> root;
-   root["temp"] = jsonTemp.to<JsonObject>();
-   root["probe"] = jsonProbe.to<JsonObject>();
+   root["temp"] = jsonTemp.as<JsonObject>();
+   root["probe"] = jsonProbe.as<JsonObject>();
    String result;
    serializeJson(root, result);
    return result;
@@ -201,17 +203,17 @@ String HeatTreatmentThread::getJsonState() const
 {
    StaticJsonDocument<400> root;
 
-   root["mode"] = __globalState__.getMode();
-   root["heatingMode"] = __globalState__.getHeatingMode();
+   root["mode"] = GlobalState::instance()->getMode();
+   root["heatingMode"] = GlobalState::instance()->getHeatingMode();
 
-   root["heatingState"] = __globalState__.getHeatingState();
-   root["convectionState"] = __globalState__.getConvectionState();
-   root["airPumpState"] = __globalState__.getAirPumpState();
-   root["waterPumpState"] = __globalState__.getWaterPumpState();
-   root["ignitionState"] = __globalState__.getIgnitionState();
+   root["heatingState"] = GlobalState::instance()->getHeatingState();
+   root["convectionState"] = GlobalState::instance()->getConvectionState();
+   root["airPumpState"] = GlobalState::instance()->getAirPumpState();
+   root["waterPumpState"] = GlobalState::instance()->getWaterPumpState();
+   root["ignitionState"] = GlobalState::instance()->getIgnitionState();
 
-   root["currentOutTemp"] = __globalState__.currentOutTemp;
-   root["currentProbeTemp"] = __globalState__.currentProbeTemp;
+   root["currentOutTemp"] = GlobalState::instance()->currentOutTemp;
+   root["currentProbeTemp"] = GlobalState::instance()->currentProbeTemp;
    root["started"] = getStartFlag();
    String result;
    serializeJson(root, result);
