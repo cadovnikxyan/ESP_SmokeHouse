@@ -11,7 +11,9 @@ String ProbeThread::getJsonProbeTemp()
 {
    StaticJsonDocument<200> jsonBuffer;
    JsonObject root = jsonBuffer.to<JsonObject>();
+   tempValue = getTemp();
    root["tempProbe"] = tempValue;
+   Serial.println(tempValue);
    String result;
    serializeJson(root, result);
    return result;
@@ -19,28 +21,36 @@ String ProbeThread::getJsonProbeTemp()
 
 double ProbeThread::getTemp()
 {
-   int t = analogRead( THERMISTORPIN );
-   double tr = 1023.0 / t - 1;
-   tr = SERIAL_R / tr;
+   std::vector<int> average;
+   for ( int i = 0 ; i < 10; ++ i )
+   {
+      average.push_back(analogRead( THERMISTORPIN ));
+      delay(10);
+   }
+   int t = std::accumulate(average.begin(), average.end(), 0) / average.size();
 
-   double steinhart;
-   steinhart = tr / THERMISTOR_R; // (R/Ro)
-   steinhart = log(steinhart); // ln(R/Ro)
-   steinhart /= B; // 1/B * ln(R/Ro)
-   steinhart += 1.0 / (NOMINAL_T + 273.15); // + (1/To)
-   steinhart = 1.0 / steinhart; // Invert
-   steinhart -= 273.15;
-   
-   if ( steinhart <= DRYING_DONE_TEMP )
+   double Rth = 1023.0 / t -1;
+   Rth = SERIAL_R / Rth;
+   double temperature;
+   temperature = Rth / THERMISTOR_R; // (R/Ro)
+   temperature = log(temperature); // ln(R/Ro)
+   temperature /= B; // 1/B * ln(R/Ro)
+   temperature += 1.0 / (NOMINAL_T + 273.15); // + (1/To)
+   temperature = 1.0 / temperature; // Invert
+   temperature -= 273.15;
+    
+   Serial.println(Rth);
+   Serial.println(temperature);
+   if ( temperature <= DRYING_DONE_TEMP )
       GlobalState::instance()->state.heating_mode = HEATING_DRYING_STATE;
-   else if ( steinhart < DRYING_DONE_TEMP && steinhart < FRYING_DONE_TEMP )
+   else if ( temperature >= DRYING_DONE_TEMP && temperature < FRYING_DONE_TEMP )
       GlobalState::instance()->state.heating_mode = HEATING_FRYING_STATE;
-   else if ( steinhart < FRYING_DONE_TEMP && steinhart < FULL_DONE_TEMP )
+   else if ( temperature >= FRYING_DONE_TEMP && temperature < FULL_DONE_TEMP )
       GlobalState::instance()->state.heating_mode = HEATING_BOILING_STATE;
    else 
       GlobalState::instance()->state.heating_mode = HEATING_NONE_STATE;
 
-   return steinhart;
+   return temperature;
 }
 
 void ProbeThread::run()

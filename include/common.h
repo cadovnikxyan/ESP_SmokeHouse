@@ -40,12 +40,13 @@
 #define CONVECTION_COOLER_2 RELAY_PIN_6
 #define IGNITION            RELAY_PIN_7
 
-#define CS            D8 //NOT_USED
+//#define CS            D8 //NOT_USED
 
-#define B 3899
-#define SERIAL_R 100000
+#define B 4338.0
+#define SERIAL_R 145700.0
 #define THERMISTOR_R 200000
 #define NOMINAL_T 25
+#define ROOM_TEMP 298.15
 
 #define DRYING_DONE_TEMP 40
 #define FRYING_DONE_TEMP 60

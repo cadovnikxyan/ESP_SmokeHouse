@@ -15,7 +15,7 @@ void timerCallback()
 	controller->run();
   delay(500); 
 }
-
+const static int relays[] = {RELAY_PIN_1, RELAY_PIN_2, RELAY_PIN_3, RELAY_PIN_4, RELAY_PIN_5, RELAY_PIN_6, RELAY_PIN_7};
 void setup()
 {
   controller = new ThreadController();
@@ -23,6 +23,8 @@ void setup()
   webServerThread->setInterval(10);
   controller->add(webServerThread);
   Serial.begin(9600);
+   for ( auto i : relays )
+      pinMode(i, OUTPUT);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED)
   {

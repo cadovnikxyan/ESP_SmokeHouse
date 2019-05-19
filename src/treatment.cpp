@@ -212,6 +212,8 @@ String HeatTreatmentThread::getJsonState() const
    root["waterPumpState"] = GlobalState::instance()->getWaterPumpState();
    root["ignitionState"] = GlobalState::instance()->getIgnitionState();
 
+   GlobalState::instance()->currentProbeTemp = probeThread->getTemp();
+   dallasTempThread->getJsonTemp();
    root["currentOutTemp"] = GlobalState::instance()->currentOutTemp;
    root["currentProbeTemp"] = GlobalState::instance()->currentProbeTemp;
    root["started"] = getStartFlag();

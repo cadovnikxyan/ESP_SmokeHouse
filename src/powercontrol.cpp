@@ -1,7 +1,7 @@
 #include "powercontrol.h"
 
 
-const static int relays[] = {RELAY_PIN_1, RELAY_PIN_2, RELAY_PIN_3, RELAY_PIN_4, RELAY_PIN_5, RELAY_PIN_6};
+
 void disableWater()
 {
    PowerControlThread::instance()->setWaterPump(false);
@@ -19,8 +19,7 @@ PowerControlThread::PowerControlThread()
    disableWaterPump(new Ticker),
    disableIgnitionModule(new Ticker)
 {
-   for ( auto i : relays )
-      pinMode(i, OUTPUT);
+  
 }
 
 void PowerControlThread::onRelay(int relayPin, int value)
