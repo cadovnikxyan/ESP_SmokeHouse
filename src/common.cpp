@@ -7,33 +7,21 @@ GlobalState::GlobalState():
     {
     }
 
-String GlobalState::getMode()
+int GlobalState::getMode()
 {
-    String modeValue;
-    if ( state.mode == MANUAL_MODE )
-        modeValue = "manual";
-    else if (state.mode == AUTO_MODE )
-        modeValue = "auto";
-    else if (state.mode == NO_HEATING )
-        modeValue = "no_heating";
-    else if (state.mode == SMOKING_MODE )
-        modeValue = "smoking";
-    return modeValue;
+    return state.mode;
 }
 
-bool GlobalState::setMode(String mode)
+bool GlobalState::setMode(int mode)
 {
-    if ( mode == "manual" )
-        state.mode = MANUAL_MODE;
-    else if (mode == "auto" )
-        state.mode = AUTO_MODE;
-    else if (mode ==  "no_heating")
-        state.mode = NO_HEATING;
-    else if (mode == "smoking")
-        state.mode = SMOKING_MODE;
-    else
+
+    if ( mode == MANUAL_MODE || mode == AUTO_MODE || mode == SMOKING_MODE)
+    {
+        state.mode = mode;
+        return true;
+    }
+    else 
         return false;
-    return true;
 }
 
 bool GlobalState::getHeatingState()
@@ -49,34 +37,20 @@ void GlobalState::setHeatingState(bool heating)
         state.heating_state = HEATING_STATE_OFF;
 }
 
-String GlobalState::getHeatingMode()
+int GlobalState::getHeatingMode()
 {
-    String heatingMode;
-    if ( state.heating_mode == HEATING_NONE_STATE )
-        heatingMode = "none";
-    else if ( state.heating_mode == HEATING_DRYING_STATE )
-        heatingMode = "drying";
-    else if ( state.heating_mode == HEATING_FRYING_STATE )
-        heatingMode = "frying";
-    else if ( state.heating_mode == HEATING_BOILING_STATE )
-        heatingMode = "boiling";
-    return heatingMode;
+    return state.heating_mode;
 }
 
-bool GlobalState::setHeatingMode(String mode)
+bool GlobalState::setHeatingMode(int mode)
 {
-    if ( mode ==  "none")
-        state.heating_mode = HEATING_NONE_STATE;
-    else if ( mode == "drying" )
-        state.heating_mode = HEATING_DRYING_STATE;
-    else if ( mode == "frying" )
-        state.heating_mode = HEATING_FRYING_STATE;
-    else if ( mode == "boiling" )
-        state.heating_mode = HEATING_BOILING_STATE;
+    if ( mode == HEATING_NONE_STATE || mode == HEATING_DRYING_STATE || mode == HEATING_FRYING_STATE || mode == HEATING_BOILING_STATE)
+    {
+        state.heating_mode = mode;
+        return true;
+    }
     else 
         return false;
-        
-    return true;
 }
 
 bool GlobalState::getConvectionState()

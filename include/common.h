@@ -73,8 +73,8 @@ State field description :
 
 #define MANUAL_MODE              0x1000000
 #define AUTO_MODE                0x2000000
-#define NO_HEATING               0x3000000
-#define SMOKING_MODE             0x4000000
+// #define NO_HEATING               0x3000000
+#define SMOKING_MODE             0x3000000
 
 #define HEATING_STATE_ON         0x0100000
 #define HEATING_STATE_OFF        0x0200000
@@ -149,14 +149,14 @@ private:
     }
 
 public:
-    String getMode();
-    bool setMode(String mode);
+    int getMode();
+    bool setMode(int mode);
     
     bool getHeatingState();
     void setHeatingState(bool heating);
     
-    String getHeatingMode();
-    bool setHeatingMode(String mode);
+    int getHeatingMode();
+    bool setHeatingMode(int mode);
     
     bool getConvectionState();
     void setConvectionState(bool convection);

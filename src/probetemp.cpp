@@ -41,6 +41,8 @@ double ProbeThread::getTemp()
     
    Serial.println(Rth);
    Serial.println(temperature);
+   if ( temperature > 200 || temperature < 0 )
+      return 0;
    if ( temperature <= DRYING_DONE_TEMP )
       GlobalState::instance()->state.heating_mode = HEATING_DRYING_STATE;
    else if ( temperature >= DRYING_DONE_TEMP && temperature < FRYING_DONE_TEMP )

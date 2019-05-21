@@ -144,8 +144,8 @@ void HeatTreatmentThread::run()
       manualMode();
    else if ( GlobalState::instance()->state.mode == SMOKING_MODE )
       smokingMode();
-   else if ( GlobalState::instance()->state.mode == NO_HEATING )
-      noHeatingMode();
+   // else if ( GlobalState::instance()->state.mode == NO_HEATING )
+   //    noHeatingMode();
 
    runned();
 }
@@ -154,11 +154,10 @@ String HeatTreatmentThread::setState(String stringState)
 {     
    DynamicJsonDocument root(400);
    deserializeJson(root, stringState);
-   GlobalState::instance()->setMode(root["mode"].as<String>());
-   GlobalState::instance()->setHeatingMode(root["heatingMode"].as<String>());
+   GlobalState::instance()->setMode(root["mode"].as<int>());
+   GlobalState::instance()->setHeatingMode(root["heatingMode"].as<int>());
    
    GlobalState::instance()->setHeatingState(root["heatingState"].as<bool>());
-
    powerControlThread->setConvection(root["convectionState"].as<bool>());
    powerControlThread->setAirPump(root["airPumpState"].as<bool>());
    powerControlThread->setWaterPump(root["waterPumpState"].as<bool>());
