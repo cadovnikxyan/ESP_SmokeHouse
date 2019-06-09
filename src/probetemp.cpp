@@ -142,7 +142,7 @@ double ProbeThread::getTemp()
    double Rth = 1023.0 / t -1;
    Rth = SERIAL_R / Rth;
    double temperature;
-   if ( t < 162 && t > 412)
+   if ( t < 162 || t > 412)
    {
       temperature = Rth / THERMISTOR_R; // (R/Ro)
       temperature = log(temperature); // ln(R/Ro)
