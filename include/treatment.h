@@ -33,6 +33,7 @@ public:
   void run() override;
   void setStart( bool flag);
   bool getStartFlag() const;
+  void doCalibrateProbe();
 
 private:
   void setUpPID();
@@ -41,7 +42,6 @@ private:
   void autoMode();
   void manualMode();
   void smokingMode();
-  void noHeatingMode();
 
   String getJsonState() const;
 };

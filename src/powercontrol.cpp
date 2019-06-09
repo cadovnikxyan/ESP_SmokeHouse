@@ -46,13 +46,11 @@ void PowerControlThread::setConvection(bool state)
 {
    if ( state )
    {
-      onRelay(CONVECTION_COOLER_2, HIGH);
       onRelay(CONVECTION_COOLER_1, HIGH);
    }
    else
    {
       onRelay(CONVECTION_COOLER_1, LOW);
-      onRelay(CONVECTION_COOLER_2, LOW);
    }
    GlobalState::instance()->setConvectionState(state);
 }

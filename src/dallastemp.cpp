@@ -62,7 +62,7 @@ void DallasTempThread::run()
    for ( int i = 0; i < count ; ++i)
       temps.push_back(temp->getTempCByIndex(i));
 
-    getResultTemp();
+   getResultTemp();
    GlobalState::instance()->currentOutTemp = resultTemp;
    runned();
 }

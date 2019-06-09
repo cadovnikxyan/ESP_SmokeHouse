@@ -131,11 +131,6 @@ void HeatTreatmentThread::smokingMode()
      powerControlThread->setAirPump(true);
 }
 
-void HeatTreatmentThread::noHeatingMode() 
-{
-
-}
-
 void HeatTreatmentThread::run() 
 {
    if ( GlobalState::instance()->state.mode == AUTO_MODE )
@@ -144,8 +139,6 @@ void HeatTreatmentThread::run()
       manualMode();
    else if ( GlobalState::instance()->state.mode == SMOKING_MODE )
       smokingMode();
-   // else if ( GlobalState::instance()->state.mode == NO_HEATING )
-   //    noHeatingMode();
 
    runned();
 }
@@ -211,7 +204,7 @@ String HeatTreatmentThread::getJsonState() const
    root["waterPumpState"] = GlobalState::instance()->getWaterPumpState();
    root["ignitionState"] = GlobalState::instance()->getIgnitionState();
 
-   GlobalState::instance()->currentProbeTemp = probeThread->getTemp();
+   probeThread->getTemp();
    dallasTempThread->getJsonTemp();
    root["currentOutTemp"] = GlobalState::instance()->currentOutTemp;
    root["currentProbeTemp"] = GlobalState::instance()->currentProbeTemp;
@@ -219,4 +212,9 @@ String HeatTreatmentThread::getJsonState() const
    String result;
    serializeJson(root, result);
    return result;
+}
+
+void HeatTreatmentThread::doCalibrateProbe()
+{
+
 }
